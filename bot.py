@@ -1,4 +1,4 @@
-
+from data_functions import Field, Birthday, Name, Phone, Record, AddressBook
 
 def parse_input(user_input):
     cmd, *args = user_input.split()
@@ -52,10 +52,14 @@ def add_birthday(args, book):
 
     try:
         record = book.find(name)
-        record.add_birthday(birthday)
-        return f"Birthday added for {name}: {birthday}"
+        if record:
+            record.add_birthday(birthday)
+            return f"Birthday added for {name}: {birthday}"
+        else:
+            return f"Contact {name} not found."
     except Exception as e:
         return str(e)
+
 
 def show_birthday(args, book):
     try:
@@ -65,17 +69,34 @@ def show_birthday(args, book):
 
     try:
         record = book.find(name)
-        if record.birthday:
-            return f"{name}'s birthday: {record.birthday}"
+        if record:
+            if record.birthday:
+                return f"{name}'s birthday: {record.birthday}"
+            else:
+                return f"{name} does not have a birthday set."
         else:
-            return f"{name} does not have a birthday set."
+            return f"Contact {name} not found."
     except Exception as e:
         return str(e)
+
+def birthdays(book):
+    return book.get_birthdays_per_week()
 
 
 
 def main():
-    contacts = {"Ilya": "015140749275", "Olya":"015172836348", "Denis":"017673560531" }
+    #contacts = {"Ilya": "015140749275", "Olya":"015172836348", "Denis":"017673560531" }
+    book = AddressBook()
+
+    with open('test_data.json', 'r') as file:
+        test_data = json.load(file)
+        for contact_data in test_data['contacts']:
+            record = Record(contact_data['name'], contact_data['birthday'])
+            record.add_phone(contact_data['phone'])
+            book.add_record(record)
+
+
+
     print("Welcome to the assistant bot!")
     while True:
         user_input = input("Enter a command: ")
@@ -83,20 +104,26 @@ def main():
 
         if command in ["close", "exit"]:
             print("Good bye!")
+            with open('test_data.json', 'w') as file:
+                json.dump({'contacts': [record.__dict__ for record in book.data.values()]}, file, indent=4)
             break
         elif command == "hello":
             print("How can I help you?")
         elif command == "add":
-            print(add_contact(args, contacts))
+            print(add_contact(args, book))
         elif command == "all":
-            print(all_contacts(args,contacts))
+            print(all_contacts(args, book))
         elif command == "change":
-            print(change_username_phone(args,contacts))
+            print(change_username_phone(args, book))
         elif command == "phone" and "username" in user_input: 
-            print(phone_username(args,contacts))
+            print(phone_username(args, book))
+        elif command == "add-birthday":
+            print(add_birthday(args, book))
+        elif command == "show-birthday":
+            print(show_birthday(args, book))
+        elif command == "birthdays":
+            print(birthdays(book))
 
-         elif command == "phone" and "username" in user_input: 
-            print(phone_username(args,contacts))
 
         else:
             print("Invalid command.")

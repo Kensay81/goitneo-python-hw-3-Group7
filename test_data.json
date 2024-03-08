@@ -1,0 +1,20 @@
+{
+    "contacts": [
+      {
+        "name": "John",
+        "phone": "1234567890",
+        "birthday": "01.01.1990"
+      },
+      {
+        "name": "Alice",
+        "phone": "9876543210",
+        "birthday": "05.05.1985"
+      },
+      {
+        "name": "Bob",
+        "phone": "5555555555",
+        "birthday": "10.10.2000"
+      }
+    ]
+  }
+  
