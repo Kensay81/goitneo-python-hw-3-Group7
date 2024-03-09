@@ -24,8 +24,11 @@ class Birthday(Field):
 
 
 class Name(Field):
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self, value):
+        super().__init__(value)
+
+    def __str__(self):
+        return self.value
 
 class Phone(Field):
     def __init__(self, phone):

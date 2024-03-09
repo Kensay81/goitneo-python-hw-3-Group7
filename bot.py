@@ -5,44 +5,51 @@ def parse_input(user_input):
     cmd = cmd.strip().lower()
     return cmd, *args
 
-def add_contact(args, contacts):
+def add_contact(args, book):
     try:
         name, phone = args
-    except:
-        return "You have entered insufficient data"
-    if name not in contacts:
-        contacts[name] = phone
-    else:
-        return "This contact already exists"
+    except ValueError:
+        return "Insufficient data provided. Please provide both name and phone number."
+
+    record = Record(name)
+    record.add_phone(phone)
+    book.add_record(record)
     return "Contact added."
 
-def change_username_phone(args, contacts):
+def change_username_phone(args, book):
     try:
         name, phone = args
-    except:
-        return "You have entered insufficient data"
-    if name in contacts:
-        contacts[name] = phone
-    else:
-        return "There is no such contact"
-    return f"Contact {name} changed his phone numer for {phone}"
+    except ValueError:
+        return "Insufficient data provided. Please provide both name and phone number."
 
-def phone_username(args, contacts):
+    record = book.find(name)
+    if record:
+        record.phones = [Phone(phone)]
+        return f"Contact {name} changed his phone number to {phone}"
+    else:
+        return f"Contact {name} not found."
+
+def phone_username(args, book):
     try:
-        name = args[1]
-    except:
-        return "That contact is not on the list"
-    if name in contacts:
-        phone = contacts[name]
-    else:
-        return "There is no such contact"
-    return f"{name}`s phone numer is {phone}"
+        name = args[0]
+    except IndexError:
+        return "Invalid command. Please provide a contact name."
 
-def all_contacts(args, contacts):
-    phonebook = ""
-    for name, phone in contacts.items():
-        phonebook += f"{name}: {phone} \n"
-    return phonebook
+    try:
+        record = book.find(name)
+        if record:
+            phones = ", ".join(str(phone) for phone in record.phones) 
+            return f"Contact name: {name}, phones: {phones}"
+        else:
+            return f"Contact {name} not found."
+    except Exception as e:
+        return str(e)
+
+def all_contacts(book):
+    contact_list = ""
+    for record in book.data.values():
+        contact_list += str(record) + "\n"
+    return contact_list
 
 def add_birthday(args, book):
     try:
@@ -50,52 +57,56 @@ def add_birthday(args, book):
     except ValueError:
         return "Insufficient data provided. Please provide both name and birthday in the format DD.MM.YYYY."
 
-    try:
-        record = book.find(name)
-        if record:
+    record = book.find(name)
+    if record:
+        if record.birthday:
+            # Если у контакта уже есть день рождения, спрашиваем пользователя, хочет ли он заменить его
+            replace_birthday = input(f"Contact {name} already has a birthday ({record.birthday}). Do you want to replace it? (yes/no): ")
+            if replace_birthday.lower() == "yes":
+                record.add_birthday(birthday)
+                return f"Birthday updated for {name}: {birthday}"
+            else:
+                return f"Birthday for {name} was not updated."
+        else:
             record.add_birthday(birthday)
             return f"Birthday added for {name}: {birthday}"
-        else:
-            return f"Contact {name} not found."
-    except Exception as e:
-        return str(e)
-
+    else:
+        return f"Contact {name} not found."
 
 def show_birthday(args, book):
     try:
         name = args[0]
     except IndexError:
-        return "Please provide the name of the contact whose birthday you want to show."
+        return "Please provide the name of the contact."
 
-    try:
-        record = book.find(name)
-        if record:
-            if record.birthday:
-                return f"{name}'s birthday: {record.birthday}"
-            else:
-                return f"{name} does not have a birthday set."
+    record = book.find(name)
+    if record:
+        if record.birthday:
+            return f"{name}'s birthday: {record.birthday}"
         else:
-            return f"Contact {name} not found."
-    except Exception as e:
-        return str(e)
+            return f"{name} does not have a birthday set."
+    else:
+        return f"Contact {name} not found."
 
 def birthdays(book):
     return book.get_birthdays_per_week()
 
-
-
 def main():
-    #contacts = {"Ilya": "015140749275", "Olya":"015172836348", "Denis":"017673560531" }
     book = AddressBook()
 
-    with open('test_data.json', 'r') as file:
-        test_data = json.load(file)
-        for contact_data in test_data['contacts']:
-            record = Record(contact_data['name'], contact_data['birthday'])
-            record.add_phone(contact_data['phone'])
-            book.add_record(record)
+    # Test data
+    test_data = [
+        {"name": "John", "phone": "1234567890", "birthday": "01.01.1980"},
+        {"name": "Alice", "phone": "9876543210", "birthday": "02.02.1990"},
+        {"name": "Bob", "phone": "5555555555", "birthday": "03.03.2000"},
+        {"name": "Billy", "phone": "3805012345", "birthday": "04.04.2010"}
+    ]
 
-
+    # Populate the address book with test data
+    for contact_data in test_data:
+        record = Record(contact_data['name'], contact_data['birthday'])
+        record.add_phone(contact_data['phone'])
+        book.add_record(record)
 
     print("Welcome to the assistant bot!")
     while True:
@@ -104,30 +115,28 @@ def main():
 
         if command in ["close", "exit"]:
             print("Good bye!")
-            with open('test_data.json', 'w') as file:
-                json.dump({'contacts': [record.__dict__ for record in book.data.values()]}, file, indent=4)
             break
         elif command == "hello":
             print("How can I help you?")
         elif command == "add":
             print(add_contact(args, book))
         elif command == "all":
-            print(all_contacts(args, book))
+            print(all_contacts(book))
         elif command == "change":
             print(change_username_phone(args, book))
-        elif command == "phone" and "username" in user_input: 
-            print(phone_username(args, book))
+        elif command == "phone":
+            if args:
+                print(phone_username(args, book))
+            else:
+                print("Invalid command. Please provide a contact name.")
         elif command == "add-birthday":
             print(add_birthday(args, book))
         elif command == "show-birthday":
             print(show_birthday(args, book))
         elif command == "birthdays":
             print(birthdays(book))
-
-
         else:
             print("Invalid command.")
 
 if __name__ == "__main__":
     main()
-
