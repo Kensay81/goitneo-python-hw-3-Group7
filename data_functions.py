@@ -18,11 +18,10 @@ class Birthday(Field):
             raise ValueError("Birthday must be in DD.MM.YYYY format")
         
     def __str__(self):
-        return self.birthday.strftime("%d.%m.%Y")
+        return self.value.strftime("%d.%m.%Y")
+    
 
         
-
-
 class Name(Field):
     def __init__(self, value):
         super().__init__(value)
@@ -72,7 +71,11 @@ class Record:
         return None
 
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
+        phones_str = ", ".join(str(phone) for phone in self.phones)
+        if hasattr(self, 'birthday'):
+            return f"Contact name: {self.name}, phones: {phones_str}, birthday: {self.birthday}"
+        else:
+            return f"Contact name: {self.name}, phones: {phones_str}"
     
     def add_birthday(self, birthday):
         if self.birthday is not None:
@@ -101,44 +104,43 @@ class AddressBook:
         else:
             raise Exception(f"{name} is not in the Address book")
         
-    def get_birthdays_per_week(users):
-   
-        #today = datetime(2021, 12, 26).date() # тестовая дата с переходом года на неделе
+    def get_birthdays_per_week(self):
         today = datetime.today().date()
 
-        # подготовка индексов по дням недели от текущего дня
+        # Подготовка индексов по дням недели от текущего дня
         days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         today_index = today.weekday()
         sorted_days = days_of_week[today_index:] + days_of_week[:today_index]
         next_week_birthdays = defaultdict(list)
 
-        # поиск в списке всех именинников на ближайшие 7 дней, включая текущий день    
-        for user in users:
-            name = user["name"]
-            birthday = user["birthday"].date()
-            birthday_this_year = birthday.replace(year=today.year)
-            if birthday_this_year < today:
-                birthday_this_year = birthday_this_year.replace(year=today.year + 1)
-            delta_days = (birthday_this_year - today).days
-            if delta_days < 7:
-                next_week_birthdays[birthday_this_year.strftime("%A")].append(name)
+        # Поиск в списке всех именинников на ближайшие 7 дней, включая текущий день    
+        for record in self.data.values():
+            if record.birthday:
+                birthday = record.birthday.value
+                birthday_this_year = birthday.replace(year=today.year)
+                if birthday_this_year < today:
+                    birthday_this_year = birthday_this_year.replace(year=today.year + 1)
+                delta_days = (birthday_this_year - today).days
+                if delta_days < 7:
+                    next_week_birthdays[birthday_this_year.strftime("%A")].append(record.name.value)
 
-        # сортировка дней рождений с учетом условий задачи (перенос с выходных на понедельник,
+        # Сортировка дней рождений с учетом условий задачи (перенос с выходных на понедельник,
         # сортировка от сегодняшнего дня по дням недели)   
-        sorted_birtdays = {}
+        sorted_birthdays = {}
         for day in sorted_days:
             if day in next_week_birthdays:  
                 if day == "Saturday" or day == "Sunday":
-                    sorted_birtdays["Monday"] = next_week_birthdays[day]
+                    sorted_birthdays["Monday"] = next_week_birthdays[day]
                 else:
-                    sorted_birtdays[day] = next_week_birthdays[day] 
+                    sorted_birthdays[day] = next_week_birthdays[day] 
 
         # Вывод результатов
-        if len(sorted_birtdays) == 0:
+        if len(sorted_birthdays) == 0:
             print("No one on your list has a birthday this week.")
         else:
-            for day, name in sorted_birtdays.items():
-                print(f"{day}: {', '.join(name)}")    
+            for day, names in sorted_birthdays.items():
+                print(f"{day}: {', '.join(names)}")    
 
-        return sorted_birtdays
+        return sorted_birthdays
+
 

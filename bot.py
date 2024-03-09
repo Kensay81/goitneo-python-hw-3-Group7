@@ -60,18 +60,13 @@ def add_birthday(args, book):
     record = book.find(name)
     if record:
         if record.birthday:
-            # Если у контакта уже есть день рождения, спрашиваем пользователя, хочет ли он заменить его
-            replace_birthday = input(f"Contact {name} already has a birthday ({record.birthday}). Do you want to replace it? (yes/no): ")
-            if replace_birthday.lower() == "yes":
-                record.add_birthday(birthday)
-                return f"Birthday updated for {name}: {birthday}"
-            else:
-                return f"Birthday for {name} was not updated."
+            return f"Contact {name} already has a birthday ({record.birthday})."
         else:
             record.add_birthday(birthday)
             return f"Birthday added for {name}: {birthday}"
     else:
         return f"Contact {name} not found."
+
 
 def show_birthday(args, book):
     try:
@@ -98,7 +93,7 @@ def main():
     test_data = [
         {"name": "John", "phone": "1234567890", "birthday": "01.01.1980"},
         {"name": "Alice", "phone": "9876543210", "birthday": "02.02.1990"},
-        {"name": "Bob", "phone": "5555555555", "birthday": "03.03.2000"},
+        {"name": "Bob", "phone": "5555555555", "birthday": "12.03.2000"},
         {"name": "Billy", "phone": "3805012345", "birthday": "04.04.2010"}
     ]
 
@@ -134,7 +129,7 @@ def main():
         elif command == "show-birthday":
             print(show_birthday(args, book))
         elif command == "birthdays":
-            print(birthdays(book))
+            print(book.get_birthdays_per_week())
         else:
             print("Invalid command.")
 
