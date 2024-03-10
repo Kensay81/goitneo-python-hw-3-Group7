@@ -129,9 +129,13 @@ def main():
         elif command == "show-birthday":
             print(show_birthday(args, book))
         elif command == "birthdays":
-            print(book.get_birthdays_per_week())
+            #print(book.get_birthdays_per_week())
+            book.get_birthdays_per_week()
         else:
             print("Invalid command.")
 
 if __name__ == "__main__":
     main()
+
+
+    

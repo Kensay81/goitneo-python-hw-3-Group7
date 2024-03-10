@@ -30,11 +30,17 @@ class Name(Field):
         return self.value
 
 class Phone(Field):
-    def __init__(self, phone):
-        if self.validate_number(phone):
-            super().__init__(phone)
+ #   def __init__(self, phone):
+ #       if self.validate_number(phone):
+ #           super().__init__(phone)
+ #       else:
+ #           raise ValueError("Invalid phone number format")
+    def __init__(self, value):
+        self.value = None
+        if self.validate_number(value):
+            self.value = value
         else:
-            raise ValueError("Invalid phone number format")
+            print("Invalid phone number")
 
     def validate_number(self, phone):
         patterns = ["(", "-", ")", "+", " ", "."]
