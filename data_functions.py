@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta
 
 
 class Field:
+    
     def __init__(self, value):
         self.value = value
 
@@ -10,6 +11,7 @@ class Field:
         return str(self.value)
 
 class Birthday(Field):
+    
     def __init__(self, birthday:str):
         try:
             datetime_object = datetime.strptime(birthday, "%d.%m.%Y")
@@ -23,6 +25,7 @@ class Birthday(Field):
 
         
 class Name(Field):
+    
     def __init__(self, value):
         super().__init__(value)
 
@@ -30,11 +33,7 @@ class Name(Field):
         return self.value
 
 class Phone(Field):
- #   def __init__(self, phone):
- #       if self.validate_number(phone):
- #           super().__init__(phone)
- #       else:
- #           raise ValueError("Invalid phone number format")
+
     def __init__(self, value):
         self.value = None
         if self.validate_number(value):
@@ -50,6 +49,7 @@ class Phone(Field):
         return len(clear_phone) == 10 and clear_phone.isdigit()
 
 class Record:
+    
     def __init__(self, name, birthday=None):
         self.name = Name(name)
         self.birthday = None if birthday is None else Birthday(birthday)
@@ -90,6 +90,7 @@ class Record:
 
 
 class AddressBook:
+    
     def __init__(self):
         self.data = {}
 
